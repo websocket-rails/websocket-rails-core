@@ -1,6 +1,8 @@
 require 'rubygems'
 require 'bundler/setup'
 
+require File.expand_path('../../vendor/em-rspec/lib/em-rspec', __FILE__)
+
 $:.push File.expand_path("../../lib", __FILE__)
 require "web_socks/websocket"
 

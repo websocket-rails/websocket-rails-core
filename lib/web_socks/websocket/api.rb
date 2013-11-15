@@ -22,7 +22,6 @@ module WebSocks
         end
 
         @ping            = options[:ping]
-        @ping_id         = 0
         @ready_state     = CONNECTING
         @buffered_amount = 0
 
@@ -37,10 +36,7 @@ module WebSocks
         end
 
         if @ping
-          @ping_timer = every(@ping) do
-            @ping_id += 1
-            ping(@ping_id.to_s)
-          end
+          @stream.start_ping_timer(@ping)
         end
       end
 
@@ -65,10 +61,10 @@ module WebSocks
       def finalize(reason = nil, code = nil)
         return if @ready_state == CLOSED
         @ready_state = CLOSED
-        @ping_timer.cancel if @ping_timer
         event = Event.new('close', :code => code || 1000, :reason => reason || '')
         event.init_event('close', false, false)
         dispatch_event(event)
+        close
       end
 
       def parse(data)
@@ -78,7 +74,7 @@ module WebSocks
     public
 
       def write(data)
-        @io.write(data)
+        @stream.write(data)
       end
 
       def send(message)
@@ -93,13 +89,13 @@ module WebSocks
 
       def ping(message = '', &callback)
         return false if @ready_state > OPEN
-        @driver.ping(message, &callback)
+        @stream.ping(message, &callback)
       end
 
       def close
         @ready_state = CLOSING if @ready_state == OPEN
         @driver.close
-        @io.close
+        @stream.close
       end
 
       def protocol

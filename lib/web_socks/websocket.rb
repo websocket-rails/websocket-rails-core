@@ -4,19 +4,16 @@
 # * http://dvcs.w3.org/hg/domcore/raw-file/tip/Overview.html#interface-eventtarget
 # * http://dvcs.w3.org/hg/domcore/raw-file/tip/Overview.html#interface-event
 
-require 'forwardable'
-require 'stringio'
 require 'uri'
 require 'celluloid'
+require 'celluloid/autostart'
 require 'websocket/driver'
 
 module WebSocks
 
   class WebSocket
     require File.expand_path('../websocket/api', __FILE__)
-
-    include Celluloid
-    include Celluloid::Logger
+    require File.expand_path('../stream', __FILE__)
 
     def self.determine_url(env)
       scheme = secure_request?(env) ? 'wss:' : 'ws:'
@@ -43,35 +40,16 @@ module WebSocks
     def initialize(env, protocols = nil, options = {})
       env['rack.hijack'].call
 
-      @env     = env
-      @io      = env['rack.hijack_io']
-      @url     = WebSocket.determine_url(@env)
-      @driver  = ::WebSocket::Driver.rack(self, :protocols => protocols)
+      @env       = env
+      @hijack_io = env['rack.hijack_io']
+      @url       = WebSocket.determine_url(@env)
+      @driver    = ::WebSocket::Driver.rack(self, :protocols => protocols)
+      @stream    = Stream.new(@hijack_io, @driver)
 
       super(options)
 
       @driver.start
-      async.listen
-    end
-
-    #def close
-    #  @io.close
-    #end
-
-    def write(data)
-      @io.write data
-    end
-
-    def listen
-      loop {
-        puts "test"
-        begin
-          @driver.parse @io.read #partial(1024)
-        rescue
-          debug "Connection error"
-        end
-        sleep 0.1
-      }
+      @stream.async.listen
     end
 
     def rack_response

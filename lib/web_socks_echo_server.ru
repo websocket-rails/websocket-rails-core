@@ -1,12 +1,17 @@
 $:.push File.expand_path("../../lib", __FILE__)
 require "web_socks/websocket"
+require "celluloid/autostart"
 
 class EchoServer
 
   def call(env)
-    socket = WebSocks::WebSocket.new(env, ["echo"])
+    socket = WebSocks::WebSocket.new(env, ["echo"], ping: 10)
     socket.onmessage = lambda do |event|
+      puts "message received"
       socket.send(event.data)
+    end
+    socket.onclose = lambda do |event|
+      socket.close
     end
     socket.rack_response
   end

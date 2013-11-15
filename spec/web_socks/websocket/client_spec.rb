@@ -5,23 +5,28 @@ require "socket"
 
 IS_JRUBY = (defined?(RUBY_ENGINE) && RUBY_ENGINE == 'jruby')
 
-module WebSocketSteps
-  def server(port, backend, secure)
+WebSocketSteps = EM::RSpec.async_steps do
+  def server(port, backend, secure, &callback)
+    Celluloid.boot
     @server = EchoServer.new
     @server.listen(port, backend, secure)
+    EM.add_timer(0.5, &callback)
   end
 
-  def stop
+  def stop(&callback)
     @server.stop
+    EM.next_tick(&callback)
+    Celluloid.shutdown
   end
 
-  def open_socket(url, protocols)
+  def open_socket(url, protocols, &callback)
     done = false
 
     resume = lambda do |open|
       unless done
         done = true
         @open = open
+        callback.call
       end
     end
 
@@ -29,53 +34,55 @@ module WebSocketSteps
 
     @ws.on(:open) { |e| resume.call(true) }
     @ws.onclose = lambda { |e| resume.call(false) }
-    @ws.onerror = lambda { raise "connection error" }
   end
 
-  def close_socket
+  def close_socket(&callback)
     @ws.onclose = lambda do |e|
       @open = false
+      callback.call
     end
     @ws.close
   end
 
-  def check_open
+  def check_open(&callback)
     @open.should == true
+    callback.call
   end
 
-  def check_closed
+  def check_closed(&callback)
     @open.should == false
+    callback.call
   end
 
-  def check_protocol(protocol)
+  def check_protocol(protocol, &callback)
     @ws.protocol.should == protocol
+    callback.call
   end
 
-  def listen_for_message
+  def listen_for_message(&callback)
     @ws.add_event_listener('message', lambda { |e| @message = e.data })
+    callback.call
   end
 
-  def send_message(message)
+  def send_message(message, &callback)
     @ws.send(message)
+    EM.add_timer(0.5, &callback)
   end
 
-  def check_response(message)
+  def check_response(message, &callback)
     @message.should == message
+    callback.call
   end
 
-  def check_no_response
+  def check_no_response(&callback)
     @message.should == nil
+    callback.call
   end
 end
 
-describe WebSocks::WebSocket do
-  around(:each) do |example|
-    Celluloid.boot
-    EM.run { example.run; EM.add_timer(1) { EM.stop } }
-    Celluloid.shutdown
-  end
-
+describe Faye::WebSocket::Client do
   include WebSocketSteps
+
 
   let(:port) { 4180 }
 
@@ -86,17 +93,10 @@ describe WebSocks::WebSocket do
 
   shared_examples_for "socket client" do
     it "can open a connection" do
-      #open_socket(socket_url, protocols)
-      server port, :puma, false
-      @ws = Faye::WebSocket::Client.new(url, protocols)
-
-      test = nil
-      @ws.on(:open) { |e| test = true }
-      @ws.onclose = lambda { |e| resume.call(false) }
-      @ws.onerror = lambda { raise "wtf" }
-      test.should == true
-      #check_open
-      @ws.protocol.should == "echo"
+      puts "opening connection"
+      open_socket(socket_url, protocols)
+      check_open
+      check_protocol("echo")
     end
 
     it "cannot open a connection to the wrong host" do
@@ -144,14 +144,8 @@ describe WebSocks::WebSocket do
     let(:socket_url)  { plain_text_url }
     let(:blocked_url) { wrong_url }
 
-    #before { server port, :puma, false }
-    it "can open a connection" do
-      server port, :puma, false
-      open_socket(socket_url, protocols)
-      check_open
-      check_protocol("echo")
-      stop
-    end
+    before { server port, :puma, false }
+    after  { stop }
 
     it_should_behave_like "socket client"
   end
