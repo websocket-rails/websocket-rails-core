@@ -9,7 +9,7 @@ require 'celluloid'
 require 'celluloid/autostart'
 require 'websocket/driver'
 
-module WebSocks
+module WebsocketRails::Core
 
   class WebSocket
     require File.expand_path('../websocket/api', __FILE__)

@@ -1,4 +1,4 @@
-module WebSocks
+module WebsocketRails::Core
   class WebSocket
 
     class Client

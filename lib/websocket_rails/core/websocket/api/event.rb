@@ -1,4 +1,4 @@
-module WebSocks::WebSocket::API
+module WebsocketRails::Core::WebSocket::API
   class Event
 
     attr_reader   :type, :bubbles, :cancelable

@@ -5,7 +5,7 @@ require "celluloid/autostart"
 class EchoServer
 
   def call(env)
-    socket = WebSocks::WebSocket.new(env, ["echo"], ping: 10)
+    socket = WebsocketRails::Core::WebSocket.new(env, ["echo"], ping: 10)
     socket.onmessage = lambda do |event|
       puts "message received"
       socket.send(event.data)

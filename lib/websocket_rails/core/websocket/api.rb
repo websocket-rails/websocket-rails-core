@@ -1,7 +1,7 @@
 require File.expand_path('../api/event_target', __FILE__)
 require File.expand_path('../api/event', __FILE__)
 
-module WebSocks
+module WebsocketRails::Core
   class WebSocket
 
     module API

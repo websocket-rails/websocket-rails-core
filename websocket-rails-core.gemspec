@@ -1,15 +1,15 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'web_socks/version'
+require 'websocket_rails/core/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "web_socks"
-  spec.version       = WebSocks::VERSION
+  spec.name          = "websocket-rails-core"
+  spec.version       = WebsocketRails::Core::VERSION
   spec.authors       = ["Dan Knox"]
   spec.email         = ["dknox@threedotloft.com"]
-  spec.description   = %q{A WebSocket adapter for Rack apps based on the websocket-driver gem.}
-  spec.summary       = %q{A WebSocket adapter for Rack apps based on the websocket-driver gem.}
+  spec.description   = %q{A collection of utilities for the websocket-rails gem.}
+  spec.summary       = %q{A collection of utilities for the websocket-rails gem.}
   spec.homepage      = ""
   spec.license       = "MIT"
 

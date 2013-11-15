@@ -1,4 +1,4 @@
-module WebSocks::WebSocket::API
+module WebsocketRails::Core::WebSocket::API
   module EventTarget
 
     include ::WebSocket::Driver::EventEmitter
