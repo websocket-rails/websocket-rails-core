@@ -1,7 +1,6 @@
-# WebSocks
+# WebsocketRails Core
 
-A drop in replacement of the faye-websocket-ruby gem using Celluloid
-instead of EventMachine.
+A collection of utility classes for the WebsocketRails gem.
 
 ## Usage
 
