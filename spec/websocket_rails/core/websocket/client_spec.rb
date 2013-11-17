@@ -7,7 +7,6 @@ IS_JRUBY = (defined?(RUBY_ENGINE) && RUBY_ENGINE == 'jruby')
 
 WebSocketSteps = EM::RSpec.async_steps do
   def server(port, backend, secure, &callback)
-    Celluloid.boot
     @server = EchoServer.new
     @server.listen(port, backend, secure)
     EM.add_timer(0.5, &callback)
@@ -16,7 +15,6 @@ WebSocketSteps = EM::RSpec.async_steps do
   def stop(&callback)
     @server.stop
     EM.next_tick(&callback)
-    Celluloid.shutdown
   end
 
   def open_socket(url, protocols, &callback)

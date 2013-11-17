@@ -5,8 +5,6 @@
 # * http://dvcs.w3.org/hg/domcore/raw-file/tip/Overview.html#interface-event
 
 require 'uri'
-require 'celluloid'
-require 'celluloid/autostart'
 require 'websocket/driver'
 
 module WebsocketRails::Core
@@ -49,7 +47,7 @@ module WebsocketRails::Core
       super(options)
 
       @driver.start
-      @stream.async.listen
+      @stream.listen
     end
 
     def rack_response

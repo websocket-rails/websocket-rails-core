@@ -6,9 +6,7 @@ require File.expand_path('../../vendor/em-rspec/lib/em-rspec', __FILE__)
 $:.push File.expand_path("../../lib", __FILE__)
 require "websocket_rails/core/websocket"
 
-require "celluloid/test"
 require 'faye/websocket'
-#require 'celluloid/websocket/client'
 
 require 'puma'
 require 'thin'
